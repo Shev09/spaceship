@@ -1,0 +1,67 @@
+logging:
+  level:
+    ROOT: ${LOGGING_LEVEL_ROOT:INFO}
+    org.hibernate.SQL: ${LOGGING_LEVEL_HIBERNATE_QUERIES:INFO}
+#  file:
+#    name: log/spaceship-manager.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, loggers, info, prometheus, bindings, bindings-name, shutdown
+  metrics:
+    tags:
+      application: spaceship-manager
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: "livenessState"
+        readiness:
+          include: "readinessState"
+      show-details: always
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: ${REQUEST_CONNECTION_TIMEOUT:120000}
+        read-timeout: ${REQUEST_READ_TIMEOUT:120000}
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    password: ${POSTGRES_PASS:mysecretpassword}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=spaceshipmanager&reWriteBatchedInserts=true&stringtype=unspecified}
+    username: ${POSTGRES_USER:spaceshipmanager}
+    hikari:
+      maximum-pool-size: ${MAX_POOL_CONNECTIONS:3}
+  flyway:
+    enabled: true
+    default-schema: spaceshipmanager
+    baseline-on-migrate: ${BASELINE_ON_MIGRATE:true}
+    clean-disabled: true
+    schemas: [ spaceshipmanager ]
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: ${SHOW_SQL:true}
+
+  
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    display-request-duration: true
+    groups-order: desc
+    operations-sorter: alpha
+    path: ''
+  version: '@version@'
